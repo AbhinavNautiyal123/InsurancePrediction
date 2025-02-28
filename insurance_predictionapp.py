@@ -1,25 +1,32 @@
 import os
+
+os.system("pip install -r requirements.txt")
+
 import streamlit as st
+
 import onnxruntime as rt
 import numpy as np
 import gdown  # For downloading files from Google Drive
-
-# Ensure dependencies are installed
-os.system("pip install -r requirements.txt")
+import os
 
 # Streamlit Page Configuration
 st.set_page_config(page_title="Insurance Policy Predictor", page_icon="💰", layout="wide")
 
-# Google Drive File (ONNX Model)
 file_id = "1p0SVNYD2NlT2J_hIPN3o7azBkEzxjqzF"
 download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-
-# Download the ONNX model if not already present
 model_filename = "RandomForestModel.onnx"
-if not os.path.exists(model_filename):
-    gdown.download(download_url, model_filename, quiet=False)
-    st.info(f"Model downloaded successfully! 🚀")
 
+if not os.path.exists(model_filename):
+    st.info("Downloading model, please wait... ⏳")
+    
+    response = requests.get(download_url, stream=True)
+    if response.status_code == 200:
+        with open(model_filename, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        st.success("Model downloaded successfully! 🚀")
+    else:
+        st.error("Failed to download the model. Please check the link.")
 # Load ONNX Model
 @st.cache_resource
 def load_model():
@@ -27,8 +34,7 @@ def load_model():
 
 # Try to load the model
 session = load_model()
-
-# Display success message
+# Function to make predictions
 if session:
     st.success("Created by Abhinav Nautiyal 🚀")
 else:
@@ -55,8 +61,8 @@ def predict_response(features):
         # Convert features to numpy array
         input_data = np.array([features], dtype=np.float32)
 
-        # Debugging: Print feature count
-        st.write(f"🔍 Feature Count: {input_data.shape[1]} (Expected: 16)")
+        # Debug: Print feature shape
+        st.write(f"🔍 Feature Count: {input_data.shape[1]}")
 
         # Run inference
         prediction = session.run([output_name], {input_name: input_data})[0]
@@ -78,20 +84,15 @@ with col1:
     age_20_40 = st.checkbox("Age Between 20 and 40")
     gender = st.radio("Gender", ["Male", "Female"], horizontal=True)
     driving_license = st.checkbox("Has Driving License")
-    region_code = st.number_input("Region Code", min_value=0.0, value=28.0, step=1.0)
+    region_code = min_max_scale(st.number_input("Region Code", min_value=0.0, value=28.0, step=1.0), MIN_REGION, MAX_REGION)
     previously_insured = st.radio("Previously Insured", ["Yes", "No"], horizontal=True)
 
 with col2:
     st.markdown("### 🚗 Vehicle & Policy Details")
     vehicle_age = st.radio("Vehicle Age", ["<1 year", "1-2 years", ">2 years"], horizontal=True)
-    annual_premium = st.number_input("Annual Premium", min_value=0.0, value=40000.0)
-    policy_sales_channel = st.number_input("Policy Sales Channel", min_value=0.0, value=26.0, step=1.0)
+    annual_premium = min_max_scale(st.number_input("Annual Premium", min_value=0.0, value=40000.0), MIN_PREMIUM, MAX_PREMIUM)
+    policy_sales_channel = min_max_scale(st.number_input("Policy Sales Channel", min_value=0.0, value=26.0, step=1.0), MIN_CHANNEL, MAX_CHANNEL)
     customer_type = st.radio("Customer Type", ["Long-term", "Mid-term", "Short-term"], horizontal=True)
-
-# Apply Scaling
-region_code = min_max_scale(region_code, MIN_REGION, MAX_REGION)
-annual_premium = min_max_scale(annual_premium, MIN_PREMIUM, MAX_PREMIUM)
-policy_sales_channel = min_max_scale(policy_sales_channel, MIN_CHANNEL, MAX_CHANNEL)
 
 # Predict Button
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
@@ -101,7 +102,7 @@ if st.button("🔥 Predict Now 🔥"):
         1 if gender == "Male" else 0, 1 if gender == "Female" else 0, int(driving_license),
         float(region_code), 1 if vehicle_age == "1-2 years" else 0, 1 if vehicle_age == "<1 year" else 0, 1 if vehicle_age == ">2 years" else 0,
         float(annual_premium), 1 if previously_insured == "Yes" else 0, 1 if previously_insured == "No" else 0,
-        float(policy_sales_channel), 1 if customer_type == "Long-term" else 0, 1 if customer_type == "Mid-term" else 0, 1 if customer_type == "Short-term" else 0
+        float(policy_sales_channel), 1 if customer_type == "Long-term" else 0, 1 if customer_type == "Mid-term" else 0
     ]
     
     if len(user_input) != 16:
