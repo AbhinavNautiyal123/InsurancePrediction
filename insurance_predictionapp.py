@@ -1,5 +1,4 @@
 import os
-import requests
 
 os.system("pip install -r requirements.txt")
 
@@ -13,21 +12,16 @@ import os
 # Streamlit Page Configuration
 st.set_page_config(page_title="Insurance Policy Predictor", page_icon="💰", layout="wide")
 
+# Google Drive File (ONNX Model)
 file_id = "1p0SVNYD2NlT2J_hIPN3o7azBkEzxjqzF"
 download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-model_filename = "RandomForestModel.onnx"
 
+# Download the ONNX model if not already present
+model_filename = "RandomForestModel.onnx"
 if not os.path.exists(model_filename):
-    st.info("Downloading model, please wait... ⏳")
-    
-    response = requests.get(download_url, stream=True)
-    if response.status_code == 200:
-        with open(model_filename, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        st.success("Model downloaded successfully! 🚀")
-    else:
-        st.error("Failed to download the model. Please check the link.")
+    gdown.download(download_url, model_filename, quiet=False)
+    st.info(f"Model downloaded successfully! 🚀")
+
 # Load ONNX Model
 @st.cache_resource
 def load_model():
