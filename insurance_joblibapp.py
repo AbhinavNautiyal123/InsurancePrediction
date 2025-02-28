@@ -5,6 +5,8 @@ os.system("pip install -r requirements.txt")
 import joblib
 import streamlit as st
 import requests
+import zipfile  # Extract ZIP files
+
 
 # Install required packages
 os.system("pip install -r requirements.txt")
@@ -13,21 +15,20 @@ os.system("pip install -r requirements.txt")
 st.set_page_config(page_title="Insurance Policy Predictor", page_icon="💰", layout="wide")
 
 # Google Drive File (Joblib Model)
-file_id = "1r86nZ1L5K8-aoLfA0uTm_m1C5auFS64s"
+file_id = "1mK53offiWvIUOi5XqFKe5DyQvpKz54nX"
 download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-model_filename = "RandomForestModel.joblib"
-
+zip_filename = "RandomForestModel.zip"
+model_filename = "RandomForestModel.onnx"
 # Download the Joblib model if not already present
 if not os.path.exists(model_filename):
-    st.info("Downloading model, please wait... ⏳")
-    response = requests.get(download_url, stream=True)
-    if response.status_code == 200:
-        with open(model_filename, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        st.success("Model downloaded successfully! 🚀")
-    else:
-        st.error("Failed to download the model. Please check the link.")
+    st.info("Downloading model ZIP file... 📥")
+    gdown.download(download_url, zip_filename, quiet=False)
+
+    # Extract ZIP File
+    with zipfile.ZipFile(zip_filename, 'r') as zip_ref:
+        zip_ref.extractall(".")  # Extract to current directory
+
+    st.success("Model extracted successfully! 🚀")
 
 # Load Joblib Model
 @st.cache_resource
@@ -60,7 +61,7 @@ def predict_response(features):
         return f"⚠️ Prediction failed: {e}"
 
 # UI Components
-st.markdown("<h1 style='text-align: center;'>🚀 Health Insurance Policy Predictor 💰</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>🚀 Vehicle Insurance Policy Predictor 💰</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: #FEB47B;'>Find out if a customer will take the policy!</h3>", unsafe_allow_html=True)
 
 col1, col2 = st.columns([1, 1])
