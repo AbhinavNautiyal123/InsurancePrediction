@@ -8,20 +8,27 @@ import onnxruntime as rt
 import numpy as np
 import gdown  # For downloading files from Google Drive
 import os
+import zipfile  # Extract ZIP files
+
 
 # Streamlit Page Configuration
 st.set_page_config(page_title="Insurance Policy Predictor", page_icon="💰", layout="wide")
 
 # Google Drive File (ONNX Model)
-file_id = "1p0SVNYD2NlT2J_hIPN3o7azBkEzxjqzF"
+file_id = "1mK53offiWvIUOi5XqFKe5DyQvpKz54nX"
 download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-
-# Download the ONNX model if not already present
+zip_filename = "RandomForestModel.zip"
 model_filename = "RandomForestModel.onnx"
+# Download the Joblib model if not already present
 if not os.path.exists(model_filename):
-    gdown.download(download_url, model_filename, quiet=False)
-    st.info(f"Model downloaded successfully! 🚀")
+    st.info("Downloading model ZIP file... 📥")
+    gdown.download(download_url, zip_filename, quiet=False)
 
+    # Extract ZIP File
+    with zipfile.ZipFile(zip_filename, 'r') as zip_ref:
+        zip_ref.extractall(".")  # Extract to current directory
+
+    st.success("Model extracted successfully! 🚀")
 # Load ONNX Model
 @st.cache_resource
 def load_model():
@@ -67,7 +74,7 @@ def predict_response(features):
         return f"⚠️ Prediction failed: {e}"
 
 # UI Components
-st.markdown("<h1 style='text-align: center;'>🚀 Health Insurance Policy Predictor 💰</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>🚀 Vehicle Insurance Policy Predictor 💰</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: #FEB47B;'>Find out if a customer will take the policy!</h3>", unsafe_allow_html=True)
 
 col1, col2 = st.columns([1, 1])
