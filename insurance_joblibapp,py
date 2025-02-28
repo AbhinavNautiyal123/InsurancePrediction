@@ -1,6 +1,7 @@
 import os
 os.system("pip install -r requirements.txt")
 
+
 import joblib
 import streamlit as st
 import requests
@@ -12,7 +13,7 @@ os.system("pip install -r requirements.txt")
 st.set_page_config(page_title="Insurance Policy Predictor", page_icon="💰", layout="wide")
 
 # Google Drive File (Joblib Model)
-file_id = "1p0SVNYD2NlT2J_hIPN3o7azBkEzxjqzF"
+file_id = "1r86nZ1L5K8-aoLfA0uTm_m1C5auFS64s"
 download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
 model_filename = "RandomForestModel.joblib"
 
