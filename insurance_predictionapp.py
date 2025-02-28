@@ -3,6 +3,8 @@ import os
 os.system("pip install -r requirements.txt")
 
 import streamlit as st
+streamlit cache clear
+
 import onnxruntime as rt
 import numpy as np
 import gdown  # For downloading files from Google Drive
